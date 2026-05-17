@@ -15,8 +15,9 @@ It updates the Conan Exiles dedicated server, downloads the mods listed in `Serv
 - Stops the running Conan server from `tmux`, if it is already running
 - Sends `Ctrl-C`, waits 10 seconds, sends `Ctrl-C` again, then kills the session if it still has not stopped after 60 seconds
 - Updates the Conan Exiles dedicated server using SteamCMD
+- Validates SteamCMD exit codes and error output for server and mod updates
 - Reads mod IDs from `ServerModList=` in `ServerSettings.ini`
-- Downloads each Steam Workshop mod
+- Downloads all Steam Workshop mods in a single SteamCMD session
 - Finds each `.pak` file
 - Writes relative paths to:
 
@@ -205,6 +206,14 @@ Make it executable:
 
 ```bash
 chmod +x ~/.local/share/Steam/steamcmd/steamcmd.sh
+```
+
+### SteamCMD update failed
+
+The updater checks SteamCMD's exit code and scans its output for errors (for example `ERROR!`, `Login Failure`, or `Update failed`). Relevant lines are copied into `conan-mod-updater.log`. Run SteamCMD manually if you need more detail:
+
+```bash
+~/.local/share/Steam/steamcmd/steamcmd.sh +login anonymous +quit
 ```
 
 ### tmux is missing

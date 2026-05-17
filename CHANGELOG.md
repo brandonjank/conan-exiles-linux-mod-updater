@@ -5,6 +5,12 @@
 ### Added
 
 - Environment variable overrides: `CONAN_BASE_PATH`, `STEAMCMD_PATH`, `CONAN_TMUX_SESSION`
+- Single SteamCMD session for all workshop mod downloads
+- SteamCMD exit code and error output validation for server and mod updates
+
+### Changed
+
+- Workshop mods are downloaded in one batched SteamCMD run instead of one run per mod
 
 ## 1.0.0
 

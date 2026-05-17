@@ -66,6 +66,62 @@ log() {
     echo "[$(date '+%Y-%m-%d %H:%M:%S')] $*"
 }
 
+log_steamcmd_errors() {
+    local tmp_log="$1"
+
+    grep -E 'ERROR!|ERROR \(|Login Failure|Update failed|Invalid (App|Steam)|Success! App' "$tmp_log" |
+        while IFS= read -r line; do
+            log "  $line"
+        done || true
+}
+
+run_steamcmd() {
+    local label="$1"
+    shift
+    local tmp_log
+    tmp_log="$(mktemp "${TMPDIR:-/tmp}/conan-steamcmd.XXXXXX")"
+
+    log "Running SteamCMD: $label"
+
+    set +e
+    "$STEAMCMD" "$@" 2>&1 | tee -a "$tmp_log"
+    local exit_code="${PIPESTATUS[0]}"
+    set -e
+
+    if [[ "$exit_code" -ne 0 ]]; then
+        log "ERROR: SteamCMD exited with code $exit_code ($label)"
+        log_steamcmd_errors "$tmp_log"
+        rm -f "$tmp_log"
+        exit 1
+    fi
+
+    if grep -qE 'ERROR!|ERROR \(|Login Failure|Update failed|Invalid (App|Steam)' "$tmp_log"; then
+        log "ERROR: SteamCMD output indicates failure ($label)"
+        log_steamcmd_errors "$tmp_log"
+        rm -f "$tmp_log"
+        exit 1
+    fi
+
+    rm -f "$tmp_log"
+    log "SteamCMD completed successfully: $label"
+}
+
+download_workshop_mods() {
+    local -a steamcmd_args=(
+        +force_install_dir "$MOD_PATH"
+        +login anonymous
+        +@sSteamCmdForcePlatformType Linux
+    )
+
+    for mod_id in "${MODS[@]}"; do
+        steamcmd_args+=(+workshop_download_item "$CONAN_ID" "$mod_id")
+    done
+
+    steamcmd_args+=(+quit)
+
+    run_steamcmd "workshop mod download (${#MODS[@]} item(s))" "${steamcmd_args[@]}"
+}
+
 server_running() {
     tmux has-session -t "$TMUX_SESSION" 2>/dev/null
 }
@@ -188,7 +244,7 @@ fi
 
 log "Updating Conan Exiles dedicated server app $CONAN_SERVER_APP_ID..."
 
-"$STEAMCMD" \
+run_steamcmd "Conan dedicated server update" \
     +force_install_dir "$BASE_PATH" \
     +login anonymous \
     +@sSteamCmdForcePlatformType Linux \
@@ -260,15 +316,10 @@ log "Found ${#MODS[@]} unique mod ID(s)."
 pak_count=0
 warning_count=0
 
-for mod_id in "${MODS[@]}"; do
-    log "Downloading mod $mod_id..."
+download_workshop_mods
 
-    "$STEAMCMD" \
-        +force_install_dir "$MOD_PATH" \
-        +login anonymous \
-        +@sSteamCmdForcePlatformType Linux \
-        +workshop_download_item "$CONAN_ID" "$mod_id" \
-        +quit
+for mod_id in "${MODS[@]}"; do
+    log "Processing mod $mod_id..."
 
     mod_dir="$MOD_PATH/steamapps/workshop/content/$CONAN_ID/$mod_id"
 
