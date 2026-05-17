@@ -22,6 +22,7 @@ SERVER_CMD="$SERVER_BIN ConanSandbox"
 PRUNE=false
 SERVER_WAS_RUNNING=false
 SERVER_STOPPED_BY_SCRIPT=false
+LOCK_RELEASED=false
 
 usage() {
     cat <<EOF
@@ -64,6 +65,14 @@ server_running() {
     tmux has-session -t "$TMUX_SESSION" 2>/dev/null
 }
 
+release_lock() {
+    if [[ "$LOCK_RELEASED" == false ]]; then
+        flock -u 9 2>/dev/null || true
+        exec 9>&- 2>/dev/null || true
+        LOCK_RELEASED=true
+    fi
+}
+
 start_server() {
     if server_running; then
         log "Conan server is already running in tmux session: $TMUX_SESSION"
@@ -76,6 +85,10 @@ start_server() {
     fi
 
     log "Starting Conan server in tmux session: $TMUX_SESSION"
+
+    # Release the updater lock before starting tmux.
+    # Otherwise tmux/Conan can inherit the lock and block future updates.
+    release_lock
 
     tmux new-session -d -s "$TMUX_SESSION" -c "$BASE_PATH" "$SERVER_CMD"
 
@@ -130,6 +143,8 @@ on_error() {
         log "Server was running before the update. Attempting to start it again."
         start_server || true
     fi
+
+    release_lock
 }
 
 trap cleanup EXIT
@@ -139,6 +154,7 @@ exec 9>"$LOCK_FILE"
 
 if ! flock -n 9; then
     log "ERROR: Another Conan update is already running."
+    log "If no updater is running, remove stale lock file: $LOCK_FILE"
     exit 1
 fi
 
