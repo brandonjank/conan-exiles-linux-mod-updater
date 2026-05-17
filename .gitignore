@@ -1,0 +1,18 @@
+# Runtime files
+*.log
+*.lock
+*.tmp
+*.bak
+
+# Conan server files
+ConanSandbox/
+steamapps/
+
+# Editor files
+.vscode/
+.idea/
+*.swp
+
+# OS files
+.DS_Store
+Thumbs.db
