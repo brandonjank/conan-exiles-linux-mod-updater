@@ -4,7 +4,7 @@ set -Eeuo pipefail
 CONAN_ID="440900"
 CONAN_SERVER_APP_ID="443030"
 
-BASE_PATH="/home/ubuntu/conan_exiles"
+BASE_PATH="${CONAN_BASE_PATH:-/home/ubuntu/conan_exiles}"
 CONFIG_PATH="$BASE_PATH/ConanSandbox/Saved/Config/LinuxServer"
 MOD_PATH="$BASE_PATH/ConanSandbox/Mods"
 MODLIST_PATH="$MOD_PATH/modlist.txt"
@@ -12,10 +12,10 @@ TEMP_MODLIST_PATH="$MOD_PATH/modlist.txt.tmp"
 LOG_PATH="$MOD_PATH/conan-mod-updater.log"
 LOCK_FILE="$MOD_PATH/conan-mod-updater.lock"
 
-STEAMCMD="$HOME/.local/share/Steam/steamcmd/steamcmd.sh"
+STEAMCMD="${STEAMCMD_PATH:-$HOME/.local/share/Steam/steamcmd/steamcmd.sh}"
 SERVER_SETTINGS="$CONFIG_PATH/ServerSettings.ini"
 
-TMUX_SESSION="conan"
+TMUX_SESSION="${CONAN_TMUX_SESSION:-conan}"
 SERVER_BIN="$BASE_PATH/ConanSandbox/Binaries/Linux/ConanSandboxServer-Linux-Shipping"
 SERVER_CMD="$SERVER_BIN ConanSandbox"
 
@@ -31,6 +31,11 @@ Usage: ./conan-mod-updater.sh [options]
 Options:
   --prune        Remove downloaded workshop mods no longer listed in ServerModList
   -h, --help     Show this help
+
+Environment (optional overrides):
+  CONAN_BASE_PATH     Conan server install directory (default: /home/ubuntu/conan_exiles)
+  STEAMCMD_PATH       Path to steamcmd.sh (default: ~/.local/share/Steam/steamcmd/steamcmd.sh)
+  CONAN_TMUX_SESSION  tmux session name for the server (default: conan)
 EOF
 }
 

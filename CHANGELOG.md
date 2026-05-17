@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Added
+
+- Environment variable overrides: `CONAN_BASE_PATH`, `STEAMCMD_PATH`, `CONAN_TMUX_SESSION`
+
 ## 1.0.0
 
 Initial release.

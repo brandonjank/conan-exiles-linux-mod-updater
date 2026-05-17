@@ -70,33 +70,30 @@ cp conan-mod-updater.sh /home/ubuntu/conan_exiles/conan-mod-updater.sh
 chmod +x /home/ubuntu/conan_exiles/conan-mod-updater.sh
 ```
 
-## SteamCMD path
+## Configuration
 
-By default, the script expects SteamCMD here:
+Paths and the tmux session name can be overridden with environment variables. You do not need to edit the script.
 
-```text
-/home/ubuntu/.local/share/Steam/steamcmd/steamcmd.sh
-```
+| Variable | Default | Purpose |
+|---|---|---|
+| `CONAN_BASE_PATH` | `/home/ubuntu/conan_exiles` | Conan dedicated server install directory |
+| `STEAMCMD_PATH` | `~/.local/share/Steam/steamcmd/steamcmd.sh` | SteamCMD executable |
+| `CONAN_TMUX_SESSION` | `conan` | tmux session name used to run the server |
 
-If your SteamCMD path is different, edit this line in `conan-mod-updater.sh`:
-
-```bash
-STEAMCMD="$HOME/.local/share/Steam/steamcmd/steamcmd.sh"
-```
-
-## Server path
-
-By default, the script expects the Conan server here:
-
-```text
-/home/ubuntu/conan_exiles
-```
-
-If your server is installed somewhere else, edit this line:
+Example for a non-default server directory:
 
 ```bash
-BASE_PATH="/home/ubuntu/conan_exiles"
+export CONAN_BASE_PATH="/opt/conan"
+/home/ubuntu/conan_exiles/conan-mod-updater.sh
 ```
+
+Example for a one-off run with a custom SteamCMD path:
+
+```bash
+STEAMCMD_PATH="/usr/games/steamcmd.sh" /home/ubuntu/conan_exiles/conan-mod-updater.sh
+```
+
+For cron or systemd, set these variables in the unit file or crontab instead of editing the script.
 
 ## Mod configuration
 
